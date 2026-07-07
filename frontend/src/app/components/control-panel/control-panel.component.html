@@ -1,0 +1,67 @@
+<div class="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border-b border-slate-700 flex-shrink-0">
+
+  <!-- Run button -->
+  <button
+    (click)="store.compareMode() ? store.runBothAlgorithms() : store.runAlgorithm()"
+    [disabled]="store.isLoading() || store.compareIsLoading()"
+    class="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-sm font-medium flex items-center gap-1.5">
+    ▶ 运行{{ store.compareMode() ? '对比' : '' }}
+  </button>
+
+  <div class="w-px h-5 bg-slate-700 mx-1"></div>
+
+  <!-- Playback controls -->
+  <button (click)="store.setCurrentStep(0)" [disabled]="!store.canBackward()"
+    class="p-1.5 rounded hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-lg leading-none" title="回到开始">⏮</button>
+
+  <button (click)="store.stepBackward()" [disabled]="!store.canBackward()"
+    class="p-1.5 rounded hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-lg leading-none" title="上一步">⏪</button>
+
+  <button (click)="store.togglePlay()" [disabled]="store.steps().length === 0"
+    class="p-1.5 rounded hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xl leading-none">
+    {{ store.isPlaying() ? '⏸' : '▶' }}
+  </button>
+
+  <button (click)="store.stepForward()" [disabled]="!store.canForward()"
+    class="p-1.5 rounded hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-lg leading-none" title="下一步">⏩</button>
+
+  <button (click)="store.setCurrentStep(store.totalSteps() - 1)" [disabled]="!store.canForward()"
+    class="p-1.5 rounded hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-lg leading-none" title="跳到最后">⏭</button>
+
+  <div class="w-px h-5 bg-slate-700 mx-1"></div>
+
+  <!-- Speed -->
+  <span class="text-xs text-slate-500">速度</span>
+  <div class="flex gap-1">
+    <button
+      *ngFor="let opt of speedOptions"
+      (click)="onSpeedChange(opt.value)"
+      [class]="store.speed() === opt.value
+        ? 'px-2 py-0.5 rounded text-xs bg-blue-600 text-white'
+        : 'px-2 py-0.5 rounded text-xs bg-slate-700 text-slate-300 hover:bg-slate-600'">
+      {{ opt.label }}
+    </button>
+  </div>
+
+  <div class="w-px h-5 bg-slate-700 mx-1"></div>
+
+  <!-- Step slider + counter -->
+  <div class="flex items-center gap-2 flex-1 min-w-0">
+    <input
+      type="range"
+      min="0"
+      [max]="store.totalSteps() - 1"
+      [value]="store.currentStep()"
+      (input)="onSliderChange($event)"
+      [disabled]="store.steps().length === 0"
+      class="flex-1 accent-blue-500 disabled:opacity-40 cursor-pointer">
+    <span class="text-xs text-slate-400 whitespace-nowrap font-mono">
+      {{ store.steps().length > 0 ? (store.currentStep() + 1) + ' / ' + store.totalSteps() : '—' }}
+    </span>
+  </div>
+
+  <!-- Reset -->
+  <button (click)="store.reset()" class="px-2 py-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white text-xs">
+    重置
+  </button>
+</div>

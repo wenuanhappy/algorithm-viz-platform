@@ -1,0 +1,181 @@
+<app-auth *ngIf="!auth.isAuthenticated()" />
+
+<div *ngIf="auth.isAuthenticated()" class="h-screen min-h-0 flex flex-col bg-slate-950 text-white overflow-hidden">
+  <header class="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-700 flex-shrink-0 z-20">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-sm font-bold shrink-0">ALG</div>
+        <!-- 将λ替换为图片
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+        <img
+        class="size-[1.8rem] object-contain"
+        src="/favicon.ico"
+        alt="网站图标"
+        />
+      </div>
+      -->
+      <div class="min-w-0">
+        <h1 class="font-bold text-white leading-none truncate">算法与复杂度可视化学习平台</h1>
+        <p class="text-xs text-slate-500 leading-none mt-0.5">Angular + Spring Boot + Web3D</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 shrink-0">
+      <nav class="flex gap-1">
+        <button
+          *ngFor="let tab of tabs"
+          (click)="tab.type === 'action' ? store.openAiComplexityDialog() : store.setActivePanel(tab.id)"
+          [class]="tab.type === 'panel' && store.activePanel() === tab.id
+            ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white'
+            : tab.type === 'action'
+              ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-purple-600 text-white hover:bg-purple-500'
+              : 'px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800'">
+          {{ tab.icon }} {{ tab.label }}
+        </button>
+      </nav>
+
+      <div class="hidden sm:flex items-center gap-2 border-l border-slate-700 pl-3">
+        <div class="w-7 h-7 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-blue-300">
+          {{ auth.currentUser()?.displayName?.slice(0, 1) }}
+        </div>
+        <span class="text-sm text-slate-300 max-w-24 truncate">{{ auth.currentUser()?.displayName }}</span>
+      </div>
+
+      <button
+        (click)="logout()"
+        class="px-2.5 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800">
+        退出
+      </button>
+    </div>
+  </header>
+
+  <!-- Error Banner -->
+  <div *ngIf="store.error()" class="bg-red-900/80 border-b border-red-700 px-5 py-2 text-sm text-red-200 flex items-center justify-between">
+    <span>{{ store.error() }}</span>
+    <button (click)="store.error.set(null)" class="text-red-400 hover:text-white ml-4">关闭</button>
+  </div>
+
+  <!-- Main layout -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Sidebar -->
+    <app-sidebar *ngIf="store.activePanel() === 'visualizer' || store.activePanel() === 'competition'" />
+
+    <!-- Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- History Panel -->
+      <app-history-panel *ngIf="store.activePanel() === 'history'" />
+
+      <!-- Assessment Panel -->
+      <app-assessment-container *ngIf="store.activePanel() === 'assessment'" />
+
+      <!-- Competition Panel -->
+      <app-competition *ngIf="store.activePanel() === 'competition'" />
+
+      <!-- Visualizer -->
+      <ng-container *ngIf="store.activePanel() === 'visualizer'">
+
+        <!-- Control Panel -->
+        <app-control-panel />
+
+        <!-- Input Config -->
+        <app-input-config />
+
+        <!-- Phase Guide -->
+        <app-phase-guide />
+
+        <!-- Compare Metrics -->
+        <div *ngIf="store.compareMode() && compareMetrics() as m" class="px-4 py-2 bg-slate-900/80 border-b border-slate-700 flex-shrink-0">
+          <div class="flex items-center justify-center gap-6 text-xs">
+            <span class="text-blue-400 font-medium">{{ store.selectedAlgo() }}</span>
+            <span class="text-slate-500">步数</span>
+            <span [class]="m.primarySteps <= m.compareSteps ? 'text-green-400' : 'text-red-400'">{{ m.primarySteps }}</span>
+            <span class="text-slate-600">vs</span>
+            <span [class]="m.compareSteps <= m.primarySteps ? 'text-green-400' : 'text-red-400'">{{ m.compareSteps }}</span>
+            <span class="text-slate-500 ml-2">比较</span>
+            <span [class]="m.primaryComps <= m.compareComps ? 'text-green-400' : 'text-red-400'">{{ m.primaryComps }}</span>
+            <span class="text-slate-600">vs</span>
+            <span [class]="m.compareComps <= m.primaryComps ? 'text-green-400' : 'text-red-400'">{{ m.compareComps }}</span>
+            <span class="text-slate-500 ml-2">操作</span>
+            <span [class]="m.primarySwaps <= m.compareSwaps ? 'text-green-400' : 'text-red-400'">{{ m.primarySwaps }}</span>
+            <span class="text-slate-600">vs</span>
+            <span [class]="m.compareSwaps <= m.primarySwaps ? 'text-green-400' : 'text-red-400'">{{ m.compareSwaps }}</span>
+            <span class="text-purple-400 font-medium">{{ store.compareAlgo() }}</span>
+          </div>
+        </div>
+
+        <!-- Complexity Analysis Panel (non-compare mode) -->
+        <app-complexity-panel *ngIf="!store.compareMode()" />
+
+        <!-- AI Complexity Analysis Dialog -->
+        <app-ai-complexity-dialog />
+
+        <div *ngIf="store.isLoading()" class="flex-1 min-h-0 flex items-center justify-center">
+          <div class="flex flex-col items-center gap-3 text-slate-400">
+            <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm">正在计算算法步骤...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!store.isLoading() && store.steps().length === 0" class="flex-1 min-h-0 flex items-center justify-center overflow-auto">
+          <div class="text-center text-slate-500 px-4">
+            <div class="text-5xl mb-4">3D</div>
+            <p class="text-lg font-medium text-slate-400 mb-1">选择算法或 Web3D 数据结构后点击“运行”</p>
+            <p class="text-sm">平台会返回步骤数据，并展示可视化过程、阶段引导和复杂度信息。</p>
+          </div>
+        </div>
+
+        <div
+          *ngIf="!store.isLoading() && store.steps().length > 0 && !store.compareMode()"
+          [class]="store.category() === 'vr-3d'
+            ? 'flex-1 min-h-0 h-full overflow-hidden'
+            : 'flex flex-col flex-1 min-h-0 overflow-auto'">
+          <app-sorting-visualizer *ngIf="store.category() === 'sorting'" />
+          <app-graph-visualizer *ngIf="store.category() === 'graph'" />
+          <app-search-visualizer *ngIf="store.category() === 'search'" />
+          <app-dp-visualizer *ngIf="store.category() === 'dp'" />
+          <app-n-queens-visualizer *ngIf="store.category() === 'backtracking'" />
+          <app-divide-conquer-visualizer *ngIf="store.category() === 'divide-conquer'" />
+          <app-vr-3d-visualizer *ngIf="store.category() === 'vr-3d'" />
+        </div>
+
+        <div *ngIf="!store.isLoading() && store.steps().length > 0 && store.compareMode()" class="flex flex-1 min-h-0 overflow-hidden">
+          <div class="w-1/2 border-r border-slate-700 flex flex-col overflow-hidden">
+            <div class="px-3 py-1.5 bg-slate-800/60 border-b border-slate-700 text-xs text-blue-400 font-medium text-center flex-shrink-0">
+              {{ store.selectedAlgo() }}
+            </div>
+            <div class="flex flex-col flex-1 min-h-0 overflow-auto">
+              <app-sorting-visualizer *ngIf="store.category() === 'sorting'" [source]="'primary'" />
+              <app-graph-visualizer *ngIf="store.category() === 'graph'" [source]="'primary'" />
+              <app-search-visualizer *ngIf="store.category() === 'search'" [source]="'primary'" />
+              <app-dp-visualizer *ngIf="store.category() === 'dp'" [source]="'primary'" />
+              <app-n-queens-visualizer *ngIf="store.category() === 'backtracking'" [source]="'primary'" />
+            </div>
+          </div>
+
+          <div class="w-1/2 flex flex-col overflow-hidden">
+            <div class="px-3 py-1.5 bg-slate-800/60 border-b border-slate-700 text-xs text-purple-400 font-medium text-center flex-shrink-0">
+              {{ store.compareAlgo() }}
+            </div>
+            <div *ngIf="store.compareSteps().length === 0 && !store.compareIsLoading()" class="flex-1 min-h-0 flex items-center justify-center text-slate-500 text-sm">
+              点击“运行”开始对比
+            </div>
+            <div *ngIf="store.compareIsLoading()" class="flex-1 min-h-0 flex items-center justify-center">
+              <div class="flex flex-col items-center gap-2 text-slate-400 text-xs">
+                <div class="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>计算中...</span>
+              </div>
+            </div>
+            <div *ngIf="store.compareSteps().length > 0" class="flex flex-col flex-1 min-h-0 overflow-auto">
+              <app-sorting-visualizer *ngIf="store.category() === 'sorting'" [source]="'compare'" />
+              <app-graph-visualizer *ngIf="store.category() === 'graph'" [source]="'compare'" />
+              <app-search-visualizer *ngIf="store.category() === 'search'" [source]="'compare'" />
+              <app-dp-visualizer *ngIf="store.category() === 'dp'" [source]="'compare'" />
+              <app-n-queens-visualizer *ngIf="store.category() === 'backtracking'" [source]="'compare'" />
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </main>
+  </div>
+</div>

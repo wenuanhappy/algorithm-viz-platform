@@ -1,0 +1,61 @@
+# ===== Node / Angular =====
+node_modules/
+dist/
+build/
+.angular/
+.cache/
+*.local
+*.tsbuildinfo
+
+# Angular build output
+frontend/dist/
+frontend/.angular/
+
+# ===== Java / Spring Boot =====
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven wrapper
+!backend/.mvn/wrapper/maven-wrapper.jar
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/settings.json
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Env / Secrets =====
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-local.yml
+
+# Local development server logs
+backend/spring-dev.log
+backend/spring-dev.err
+frontend/angular-dev.log
+frontend/angular-dev.err
+
+# ===== 大文件（超出 GitHub 100MB 限制）=====
+*.mov
+*.mp4
+*.avi
+*.mkv
+*.flv
+*.wmv
+*.mov
+*.3gp
+
+# ===== 大型文档/演示文稿 =====
+// 算法可视化学习平台_第7小组.pptx
+*.pdf
+
+# ===== 项目特定 =====
+// 算法可视化平台报告文档.pdf

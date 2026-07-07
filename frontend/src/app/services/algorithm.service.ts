@@ -1,0 +1,70 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import {
+  AlgorithmResponse, SortStep, SearchStep, GraphStep, DPStep, NQueensStep,
+  GraphData, KnapsackItem, RunHistory, DivideConquerStep,
+  AlgorithmComplexityAnalysis, AlgorithmComplexityRequest,
+  AssessmentConfig, AssessmentQuestion, AnswerEvaluationResponse,
+} from '../models/algorithm.models';
+
+@Injectable({ providedIn: 'root' })
+export class AlgorithmService {
+  private readonly base = environment.apiUrl + '/algorithms';
+
+  constructor(private http: HttpClient) {}
+
+  runSort(algorithm: string, array: number[]): Observable<AlgorithmResponse<SortStep>> {
+    return this.http.post<AlgorithmResponse<SortStep>>(`${this.base}/sort`, { algorithm, array });
+  }
+
+  runSearch(algorithm: string, array: number[], target: number): Observable<AlgorithmResponse<SearchStep>> {
+    return this.http.post<AlgorithmResponse<SearchStep>>(`${this.base}/search`, { algorithm, array, target });
+  }
+
+  runGraph(algorithm: string, graph: GraphData, startId: string, endId: string): Observable<AlgorithmResponse<GraphStep>> {
+    return this.http.post<AlgorithmResponse<GraphStep>>(`${this.base}/graph`, { algorithm, graph, startId, endId });
+  }
+
+  runDP(algorithm: string, items: KnapsackItem[], capacity: number): Observable<AlgorithmResponse<DPStep>> {
+    return this.http.post<AlgorithmResponse<DPStep>>(`${this.base}/dp`, { algorithm, items, capacity });
+  }
+
+  runBacktracking(algorithm: string, n: number): Observable<AlgorithmResponse<NQueensStep>> {
+    return this.http.post<AlgorithmResponse<NQueensStep>>(`${this.base}/backtracking`, { algorithm, n });
+  }
+
+  runDivideConquer(algorithm: string, x: string, y: string): Observable<AlgorithmResponse<DivideConquerStep>> {
+    return this.http.post<AlgorithmResponse<DivideConquerStep>>(`${this.base}/divide-conquer`, { algorithm, x, y });
+  }
+
+  analyzeAlgorithmComplexity(request: AlgorithmComplexityRequest): Observable<AlgorithmComplexityAnalysis> {
+    return this.http.post<AlgorithmComplexityAnalysis>(`${this.base}/algorithm-complexity`, request);
+  }
+
+  getHistory(category?: string): Observable<RunHistory[]> {
+    const params = category ? `?category=${category}` : '';
+    return this.http.get<RunHistory[]>(`${this.base}/history${params}`);
+  }
+
+  deleteHistory(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/history/${id}`);
+  }
+
+  verifyStep(algorithm: string, params: Record<string, unknown>, targetStepIndex: number): Observable<{ stepData: unknown }> {
+    return this.http.post<{ stepData: unknown }>(`${this.base}/verify-step`, { algorithm, params, targetStepIndex });
+  }
+
+  checkAssessmentHealth(): Observable<{ aiAvailable: boolean; mode: string; message: string }> {
+    return this.http.get<{ aiAvailable: boolean; mode: string; message: string }>(`${this.base}/assessment/health`);
+  }
+
+  generateAssessment(config: AssessmentConfig): Observable<AssessmentQuestion[]> {
+    return this.http.post<AssessmentQuestion[]>(`${this.base}/assessment/generate`, config);
+  }
+
+  evaluateAnswer(question: AssessmentQuestion, userAnswer: string): Observable<AnswerEvaluationResponse> {
+    return this.http.post<AnswerEvaluationResponse>(`${this.base}/assessment/evaluate`, { question, userAnswer });
+  }
+}
